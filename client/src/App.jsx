@@ -137,7 +137,7 @@ export default function App() {
         {page === 'reservation' && <ReservationPage tables={tables} notify={notify} />}
         {page === 'delivery' && <DeliveryPage cur={cur} onOpen={loadOrder} />}
         {page === 'accounting' && <AccountingPage cur={cur} />}
-        {page === 'settings' && <SettingsPage user={user} settings={settings} onSaved={refresh} notify={notify} />}
+        {page === 'settings' && <SettingsPage user={user} settings={settings} onSaved={refresh} notify={notify} allowPasswordChange={!isDemoMode} />}
       </main>
 
       {showPanel && (

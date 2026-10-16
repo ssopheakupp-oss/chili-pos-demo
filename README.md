@@ -16,7 +16,7 @@ Create `client/.env.local` from `.env.example` and set `VITE_API_URL` to the API
 
 For a full local installation, create the database from `database/schema.sql`, then configure `server/.env` from `server/.env.example`. SQL Server Authentication is supported; on Windows, `DB_TRUSTED_CONNECTION=true` uses the Windows account running Node instead. Install the server dependencies with `cd server && npm install`, then start it with `npm start`. Start the Vite client with `cd client && npm run dev`; the local Vite server proxies `/api` to port 5000.
 
-The API seeds the `admin`, `floyd`, and `arlene` accounts (`admin123`, `floyd123`, and `arlene123`) only when the database has no users. Change seeded passwords before using the app with real restaurant data.
+The API seeds the `admin`, `floyd`, and `arlene` accounts (`admin123`, `floyd123`, and `arlene123`) only when the database has no users. Each user can change their own password in Settings; new passwords must be at least 12 characters. Change all seeded passwords before using the app with real restaurant data or copying it to a public cloud.
 
 The GitHub Pages site is an interactive demo with sample menu, tables, orders, and reservations. Demo changes are saved only in that browser's local storage; it does not sign in to or modify the restaurant database. The Pages workflow enables this mode at build time. Local development remains connected to the Express API.
 
