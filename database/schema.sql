@@ -70,6 +70,8 @@ CREATE TABLE dbo.Orders (
     TableId         INT NULL REFERENCES dbo.DiningTables(TableId),
     OrderType       NVARCHAR(20) NOT NULL DEFAULT 'DineIn'
                     CHECK (OrderType IN ('DineIn','TakeAway','Delivery')),
+    TrafficSource   NVARCHAR(20) NOT NULL CONSTRAINT DF_Orders_TrafficSource DEFAULT 'Other'
+                    CONSTRAINT CK_Orders_TrafficSource CHECK (TrafficSource IN ('DineIn','TakeAway','Delivery','Phone','Referral','SocialMedia','Other')),
     Status          NVARCHAR(20) NOT NULL DEFAULT 'InKitchen'
                     CHECK (Status IN ('InKitchen','Served','Paid','Cancelled')),
     CustomerName    NVARCHAR(100) NULL,

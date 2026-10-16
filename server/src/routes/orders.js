@@ -4,6 +4,7 @@ const wrap = require('../utils/wrap');
 const httpError = require('../utils/httpError');
 
 const ORDER_TYPES = ['DineIn', 'TakeAway', 'Delivery'];
+const TRAFFIC_SOURCES = ['DineIn', 'TakeAway', 'Delivery', 'Phone', 'Referral', 'SocialMedia', 'Other'];
 const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
 async function getTaxRate(pool) {
@@ -93,7 +94,7 @@ router.get('/', wrap(async (req, res) => {
   if (date) { where += ' AND CAST(o.CreatedAt AS DATE) = @d'; request.input('d', sql.Date, new Date(date)); }
   if (type && ORDER_TYPES.includes(type)) { where += ' AND o.OrderType = @t'; request.input('t', sql.NVarChar(20), type); }
   const { recordset } = await request.query(`
-    SELECT TOP 200 o.OrderId, o.OrderNo, o.OrderType, o.Status, o.Total, o.PaymentMethod, o.CreatedAt, o.PaidAt,
+    SELECT TOP 200 o.OrderId, o.OrderNo, o.OrderType, o.TrafficSource, o.Status, o.Total, o.PaymentMethod, o.CreatedAt, o.PaidAt,
            o.CustomerName, o.CustomerPhone, o.DeliveryAddress, t.TableName
     FROM Orders o LEFT JOIN DiningTables t ON t.TableId = o.TableId
     WHERE ${where} ORDER BY o.CreatedAt DESC`);
@@ -107,7 +108,9 @@ router.get('/:id', wrap(async (req, res) => {
 /* ---------- Create ---------- */
 router.post('/', wrap(async (req, res) => {
   const { tableId, orderType = 'DineIn', items, customerName, customerPhone, deliveryAddress } = req.body || {};
+  const trafficSource = req.body?.trafficSource || orderType;
   if (!ORDER_TYPES.includes(orderType)) throw httpError(400, 'Invalid order type');
+  if (!TRAFFIC_SOURCES.includes(trafficSource)) throw httpError(400, 'Invalid traffic source');
   if (orderType === 'DineIn' && !tableId) throw httpError(400, 'Choose a table for dine-in orders');
   if (orderType === 'Delivery' && (!deliveryAddress || !customerPhone)) throw httpError(400, 'Delivery needs a phone number and address');
 
@@ -127,9 +130,10 @@ router.post('/', wrap(async (req, res) => {
       .input('cn', sql.NVarChar(100), customerName || null)
       .input('cp', sql.NVarChar(30), customerPhone || null)
       .input('da', sql.NVarChar(300), deliveryAddress || null)
+      .input('src', sql.NVarChar(20), trafficSource)
       .input('by', sql.Int, req.user.id)
-      .query(`INSERT INTO Orders (TableId, OrderType, CustomerName, CustomerPhone, DeliveryAddress, CreatedBy)
-              OUTPUT INSERTED.OrderId VALUES (@t,@ty,@cn,@cp,@da,@by)`);
+      .query(`INSERT INTO Orders (TableId, OrderType, TrafficSource, CustomerName, CustomerPhone, DeliveryAddress, CreatedBy)
+              OUTPUT INSERTED.OrderId VALUES (@t,@ty,@src,@cn,@cp,@da,@by)`);
     const id = recordset[0].OrderId;
     await writeItems(tx, id, priced, taxRate);
     if (orderType === 'DineIn') {

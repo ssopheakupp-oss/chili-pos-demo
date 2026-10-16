@@ -88,6 +88,7 @@ function initialData() {
       OrderId: details.OrderId,
       OrderNo: `CH-${details.OrderId}`,
       OrderType: details.OrderType,
+      TrafficSource: details.TrafficSource || details.OrderType,
       Status: details.Status,
       TableId: details.TableId || null,
       TableName: data.tables.find((table) => table.TableId === details.TableId)?.TableName || null,
@@ -119,7 +120,16 @@ function readData() {
     return data;
   }
   try {
-    return JSON.parse(stored);
+    const data = JSON.parse(stored);
+    let changed = false;
+    for (const order of data.orders) {
+      if (!order.TrafficSource) {
+        order.TrafficSource = order.OrderType;
+        changed = true;
+      }
+    }
+    if (changed) writeData(data);
+    return data;
   } catch {
     localStorage.removeItem(STORAGE_KEY);
     return readData();
@@ -149,7 +159,11 @@ function listOrders(data, query) {
 
 function makeOrder(data, body) {
   const { orderType = 'DineIn', tableId, customerName, customerPhone, deliveryAddress } = body || {};
+  const trafficSource = body?.trafficSource || orderType;
   if (!['DineIn', 'TakeAway', 'Delivery'].includes(orderType)) throw new Error('Invalid order type');
+  if (!['DineIn', 'TakeAway', 'Delivery', 'Phone', 'Referral', 'SocialMedia', 'Other'].includes(trafficSource)) {
+    throw new Error('Invalid traffic source');
+  }
   if (orderType === 'DineIn' && !tableId) throw new Error('Choose a table for dine-in orders');
   if (orderType === 'Delivery' && (!deliveryAddress || !customerPhone)) {
     throw new Error('Delivery needs a phone number and address');
@@ -163,6 +177,7 @@ function makeOrder(data, body) {
     OrderId: id,
     OrderNo: `DEMO-${String(id).padStart(4, '0')}`,
     OrderType: orderType,
+    TrafficSource: trafficSource,
     Status: 'InKitchen',
     TableId: orderType === 'DineIn' ? Number(tableId) : null,
     TableName: orderType === 'DineIn' ? table?.TableName || null : null,
@@ -186,6 +201,14 @@ function reportSummary(data, date) {
     group.Revenue += order.Total;
     return groups;
   }, {})).map((group) => ({ ...group, Revenue: round2(group.Revenue) }));
+  const byTrafficSource = Object.values(paid.reduce((groups, order) => {
+    const key = order.TrafficSource || order.OrderType;
+    const group = groups[key] || (groups[key] = { TrafficSource: key, Orders: 0, Revenue: 0 });
+    group.Orders += 1;
+    group.Revenue += order.Total;
+    return groups;
+  }, {})).map((group) => ({ ...group, Revenue: round2(group.Revenue) }))
+    .sort((a, b) => b.Revenue - a.Revenue);
   const items = paid.flatMap((order) => order.items);
   const bestSellers = Object.values(items.reduce((groups, item) => {
     const group = groups[item.ProductName] || (groups[item.ProductName] = { ProductName: item.ProductName, Qty: 0, Revenue: 0 });
@@ -201,6 +224,7 @@ function reportSummary(data, date) {
     AvgOrder: paid.length ? round2(revenue / paid.length) : 0,
     byMethod,
     byType: [],
+    byTrafficSource,
     top: bestSellers,
   };
 }

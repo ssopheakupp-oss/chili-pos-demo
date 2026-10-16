@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { api, money } from '../api.js';
 
+const trafficSourceName = (source) => ({
+  DineIn: 'Dine-in',
+  TakeAway: 'Takeaway',
+  SocialMedia: 'Social media',
+}[source] || source || '—');
+
 export default function AccountingPage({ cur }) {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [s, setS] = useState(null);
@@ -36,6 +42,16 @@ export default function AccountingPage({ cur }) {
               {s.byMethod.map((m) => <div className="kv" key={m.PaymentMethod}><span>{m.PaymentMethod} · {m.Orders} orders</span><b>{money(m.Revenue, cur)}</b></div>)}
             </div>
             <div className="box">
+              <h3>Traffic sources</h3>
+              {!s.byTrafficSource?.length && <p className="muted">No paid orders by source on this day.</p>}
+              {s.byTrafficSource?.map((source) => (
+                <div className="kv" key={source.TrafficSource}>
+                  <span>{trafficSourceName(source.TrafficSource)} · {source.Orders} orders</span>
+                  <b>{money(source.Revenue, cur)}</b>
+                </div>
+              ))}
+            </div>
+            <div className="box">
               <h3>Best sellers</h3>
               {!s.top.length && <p className="muted">No sales on this day.</p>}
               {s.top.map((t) => <div className="kv" key={t.ProductName}><span>{t.ProductName}</span><b>{t.Qty} sold</b></div>)}
@@ -44,12 +60,12 @@ export default function AccountingPage({ cur }) {
         </>
       )}
       <table className="data">
-        <thead><tr><th>Order</th><th>Type</th><th>Table</th><th>Payment</th><th>Total</th><th>Status</th></tr></thead>
+        <thead><tr><th>Order</th><th>Type</th><th>Source</th><th>Table</th><th>Payment</th><th>Total</th><th>Status</th></tr></thead>
         <tbody>
-          {!orders.length && <tr><td colSpan="6" className="empty">No orders on this day.</td></tr>}
+          {!orders.length && <tr><td colSpan="7" className="empty">No orders on this day.</td></tr>}
           {orders.map((o) => (
             <tr key={o.OrderId}>
-              <td>{o.OrderNo}</td><td>{o.OrderType}</td><td>{o.TableName || '—'}</td>
+              <td>{o.OrderNo}</td><td>{o.OrderType}</td><td>{trafficSourceName(o.TrafficSource)}</td><td>{o.TableName || '—'}</td>
               <td>{o.PaymentMethod || '—'}</td><td>{money(o.Total, cur)}</td>
               <td><span className={`pill ${o.Status}`}>{o.Status === 'InKitchen' ? 'Process' : o.Status}</span></td>
             </tr>

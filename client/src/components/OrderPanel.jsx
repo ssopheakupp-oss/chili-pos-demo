@@ -7,7 +7,7 @@ const METHODS = [['Cash', 'Cash', Banknote], ['Card', 'Credit/Debit Card', Credi
 
 export default function OrderPanel({
   cart, totals, taxRate, cur, tables, tableId, setTableId, orderType, setOrderType,
-  customer, setCustomer, openOrder, user, changeQty, removeItem, onSubmit, onCancel, onClear,
+  trafficSource, setTrafficSource, customer, setCustomer, openOrder, user, changeQty, removeItem, onSubmit, onCancel, onClear,
 }) {
   const [method, setMethod] = useState(null);
   const table = tables.find((t) => t.TableId === tableId);
@@ -31,6 +31,18 @@ export default function OrderPanel({
             className={orderType === id ? 'active' : ''} onClick={() => setOrderType(id)}>{label}</button>
         ))}
       </div>
+
+      <label className="cust-label">Order source
+        <select className="field" value={trafficSource} disabled={locked} onChange={(e) => setTrafficSource(e.target.value)} aria-label="Order source">
+          <option value="DineIn">Dine-in</option>
+          <option value="TakeAway">Takeaway</option>
+          <option value="Delivery">Delivery</option>
+          <option value="Phone">Phone</option>
+          <option value="Referral">Referral</option>
+          <option value="SocialMedia">Social media</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
 
       {orderType === 'DineIn' && !locked && (
         <select className="field" value={tableId || ''} onChange={(e) => setTableId(e.target.value ? Number(e.target.value) : null)} aria-label="Table">

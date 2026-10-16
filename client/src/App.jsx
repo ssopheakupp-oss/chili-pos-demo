@@ -21,6 +21,7 @@ export default function App() {
   // Current order being built
   const [cart, setCart] = useState([]); // { productId, name, price, qty, isVeg }
   const [orderType, setOrderType] = useState('DineIn');
+  const [trafficSource, setTrafficSource] = useState('DineIn');
   const [tableId, setTableId] = useState(null);
   const [openOrder, setOpenOrder] = useState(null); // existing order being edited
   const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
@@ -71,13 +72,19 @@ export default function App() {
   const removeItem = (productId) => setCart((c) => c.filter((i) => i.productId !== productId));
 
   const resetOrder = () => {
-    setCart([]); setOpenOrder(null); setTableId(null); setCustomer({ name: '', phone: '', address: '' });
+    setCart([]); setOpenOrder(null); setTableId(null); setTrafficSource('DineIn'); setOrderType('DineIn'); setCustomer({ name: '', phone: '', address: '' });
+  };
+
+  const updateOrderType = (next) => {
+    setOrderType(next);
+    setTrafficSource((current) => ['DineIn', 'TakeAway', 'Delivery'].includes(current) ? next : current);
   };
 
   const loadOrder = async (orderId) => {
     try {
       const o = await api.get(`/orders/${orderId}`);
       setOpenOrder(o); setOrderType(o.OrderType); setTableId(o.TableId);
+      setTrafficSource(o.TrafficSource || o.OrderType);
       setCustomer({ name: o.CustomerName || '', phone: o.CustomerPhone || '', address: o.DeliveryAddress || '' });
       setCart(o.items.map((i) => ({ productId: i.ProductId, name: i.ProductName, price: Number(i.UnitPrice), qty: i.Quantity, isVeg: i.IsVeg, emoji: i.Emoji })));
       setPage('menu');
@@ -94,6 +101,7 @@ export default function App() {
         ? await api.put(`/orders/${openOrder.OrderId}`, { items })
         : await api.post('/orders', {
             orderType, items, tableId: orderType === 'DineIn' ? tableId : null,
+            trafficSource,
             customerName: customer.name, customerPhone: customer.phone, deliveryAddress: customer.address,
           });
       if (payWith) {
@@ -132,7 +140,7 @@ export default function App() {
         )}
         {page === 'tables' && (
           <TablesPage tables={tables} tableId={tableId} openOrder={loadOrder}
-            pickTable={(id) => { setTableId(id); setOrderType('DineIn'); setPage('menu'); }} />
+            pickTable={(id) => { setTableId(id); updateOrderType('DineIn'); setPage('menu'); }} />
         )}
         {page === 'reservation' && <ReservationPage tables={tables} notify={notify} />}
         {page === 'delivery' && <DeliveryPage cur={cur} onOpen={loadOrder} />}
@@ -144,7 +152,8 @@ export default function App() {
         <OrderPanel
           cart={cart} totals={totals} taxRate={taxRate} cur={cur}
           tables={tables} tableId={tableId} setTableId={setTableId}
-          orderType={orderType} setOrderType={setOrderType}
+          orderType={orderType} setOrderType={updateOrderType}
+          trafficSource={trafficSource} setTrafficSource={setTrafficSource}
           customer={customer} setCustomer={setCustomer}
           openOrder={openOrder} user={user}
           changeQty={changeQty} removeItem={removeItem}

@@ -18,6 +18,8 @@ For a full local installation, create the database from `database/schema.sql`, t
 
 The API seeds the `admin`, `floyd`, and `arlene` accounts (`admin123`, `floyd123`, and `arlene123`) only when the database has no users. Each user can change their own password in Settings; new passwords must be at least 12 characters. Change all seeded passwords before using the app with real restaurant data or copying it to a public cloud.
 
+Orders record a traffic source (dine-in, takeaway, delivery, phone, referral, social media, or other). Apply `database/migrations/001_order_traffic_source.sql` once to an existing database; it preserves orders and backfills their source from the existing order type. Accounting reports paid-order counts and revenue by source.
+
 The GitHub Pages site is an interactive demo with sample menu, tables, orders, and reservations. Demo changes are saved only in that browser's local storage; it does not sign in to or modify the restaurant database. The Pages workflow enables this mode at build time. Local development remains connected to the Express API.
 
 GitHub Pages hosts only the frontend. For a public production deployment connected to a real database, deploy the Express API separately on a secure HTTPS host that can reach SQL Server, configure its database credentials, and allow the Pages origin in `CLIENT_ORIGIN`. Never expose SQL Server directly to the internet or commit `.env` files and database credentials.
