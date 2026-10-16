@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { api, session } from './api.js';
+import { api, isDemoMode, session } from './api.js';
 import Login from './components/Login.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import MenuPage from './components/MenuPage.jsx';
@@ -123,6 +123,7 @@ export default function App() {
       <Sidebar page={page} setPage={setPage} user={user} onLogout={() => { session.clear(); setUser(null); resetOrder(); }} />
 
       <main className="main">
+        {isDemoMode && <div className="demo-banner">Demo mode · sample data only · changes are saved in this browser</div>}
         {page === 'menu' && (
           <>
             <MenuPage cart={cart} addToCart={addToCart} changeQty={changeQty} cur={cur} />

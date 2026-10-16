@@ -1,11 +1,28 @@
 import { useState } from 'react';
-import { api, apiConfigured, session } from '../api.js';
+import { api, apiConfigured, isDemoMode, session } from '../api.js';
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  if (isDemoMode) {
+    return (
+      <div className="login">
+        <div className="login-card">
+          <div className="brand-mark big">CHILI<br />POS</div>
+          <h1>Explore Chili POS</h1>
+          <p className="muted">Interactive demo with sample data. Changes stay in this browser and do not reach your restaurant database.</p>
+          <button className="btn primary" onClick={() => {
+            const demoUser = { id: 1, name: 'Demo Manager', role: 'Admin' };
+            session.save('demo', demoUser);
+            onLogin(demoUser);
+          }}>Enter demo</button>
+        </div>
+      </div>
+    );
+  }
 
   const submit = async (e) => {
     e.preventDefault();
