@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Search, SlidersHorizontal, LayoutGrid, Plus, Minus } from 'lucide-react';
 import { api, money, finalPrice } from '../api.js';
 
-export default function MenuPage({ cart, addToCart, changeQty, cur }) {
+export default function MenuPage({ cart, addToCart, changeQty, cur, showImages = true }) {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState(null);
@@ -69,10 +69,12 @@ export default function MenuPage({ cart, addToCart, changeQty, cur }) {
           const qty = qtyOf(p.ProductId);
           return (
             <article key={p.ProductId} className={`card ${qty ? 'selected' : ''}`}>
-              <div className="thumb">
-                {p.ImageUrl ? <img src={p.ImageUrl} alt="" /> : <span>{p.Emoji || '🍽️'}</span>}
-                {p.DiscountPct > 0 && <em className="badge-off">{p.DiscountPct}% Off</em>}
-              </div>
+              {showImages && (
+                <div className="thumb">
+                  {p.ImageUrl ? <img src={p.ImageUrl} alt="" /> : <span>{p.Emoji || '🍽️'}</span>}
+                  {p.DiscountPct > 0 && <em className="badge-off">{p.DiscountPct}% Off</em>}
+                </div>
+              )}
               <h3>{p.Name}</h3>
               <div className="card-meta">
                 <span className="price">

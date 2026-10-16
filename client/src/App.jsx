@@ -126,7 +126,7 @@ export default function App() {
         {isDemoMode && <div className="demo-banner">Demo mode · sample data only · changes are saved in this browser</div>}
         {page === 'menu' && (
           <>
-            <MenuPage cart={cart} addToCart={addToCart} changeQty={changeQty} cur={cur} />
+            <MenuPage cart={cart} addToCart={addToCart} changeQty={changeQty} cur={cur} showImages={!isDemoMode} />
             <ActiveOrders orders={activeOrders} selectedId={openOrder?.OrderId} onOpen={loadOrder} />
           </>
         )}
