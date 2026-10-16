@@ -1,17 +1,24 @@
-import { demoRequest } from './demoApi.js';
-
-const BASE = import.meta.env.VITE_API_URL || '/api';
-export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+const BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : '');
+export const apiConfigured = Boolean(BASE);
 
 export const session = {
   get token() { return localStorage.getItem('pos_token'); },
-  get user() { try { return JSON.parse(localStorage.getItem('pos_user')); } catch { return null; } },
+  get user() {
+    if (localStorage.getItem('pos_token') === 'demo') {
+      this.clear();
+      localStorage.removeItem('chili-pos-demo-data-v1');
+      return null;
+    }
+    try { return JSON.parse(localStorage.getItem('pos_user')); } catch { return null; }
+  },
   save(token, user) { localStorage.setItem('pos_token', token); localStorage.setItem('pos_user', JSON.stringify(user)); },
   clear() { localStorage.removeItem('pos_token'); localStorage.removeItem('pos_user'); },
 };
 
 async function request(method, path, body) {
-  if (isDemoMode) return demoRequest(method, path, body);
+  if (!apiConfigured) {
+    throw new Error('POS API is not configured. The administrator must set the POS_API_URL repository variable.');
+  }
 
   const res = await fetch(BASE + path, {
     method,

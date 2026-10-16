@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { api, isDemoMode, session } from './api.js';
-import { resetDemoData } from './demoApi.js';
+import { api, session } from './api.js';
 import Login from './components/Login.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import MenuPage from './components/MenuPage.jsx';
@@ -13,9 +12,7 @@ import AccountingPage from './components/AccountingPage.jsx';
 import SettingsPage from './components/SettingsPage.jsx';
 
 export default function App() {
-  const [user, setUser] = useState(() => isDemoMode
-    ? { id: 1, name: 'Demo Manager', role: 'Admin' }
-    : session.user);
+  const [user, setUser] = useState(session.user);
   const [page, setPage] = useState('menu');
   const [tables, setTables] = useState([]);
   const [activeOrders, setActiveOrders] = useState([]);
@@ -126,14 +123,6 @@ export default function App() {
       <Sidebar page={page} setPage={setPage} user={user} onLogout={() => { session.clear(); setUser(null); resetOrder(); }} />
 
       <main className="main">
-        {isDemoMode && (
-          <div className="demo-banner">
-            <span>Demo mode · changes are saved in this browser only</span>
-            <button type="button" onClick={() => {
-              if (window.confirm('Reset demo orders, reservations, and settings to the sample data?')) resetDemoData();
-            }}>Reset demo</button>
-          </div>
-        )}
         {page === 'menu' && (
           <>
             <MenuPage cart={cart} addToCart={addToCart} changeQty={changeQty} cur={cur} />
