@@ -1,4 +1,4 @@
-name: Deploy POS demo to GitHub Pages
+name: Deploy Chili POS to GitHub Pages
 
 on:
   push:

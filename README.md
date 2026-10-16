@@ -1,6 +1,6 @@
 # Chili POS
 
-Chili POS frontend for the Express API and SQL Server database. The published website uses the real sign-in flow; it does not include demo users or browser-only sample data.
+Chili POS frontend for the Express API and SQL Server database. The published website uses the real sign-in flow and loads its data from the API.
 
 ## Run locally
 
