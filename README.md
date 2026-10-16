@@ -14,8 +14,10 @@ Create `client/.env.local` from `.env.example` and set `VITE_API_URL` to the API
 
 ## Deployment and database
 
-GitHub Pages hosts only the frontend. The Node/Express API and SQL Server still need to be deployed and configured separately: host the API over HTTPS where it can reach SQL Server, configure database credentials on that host, and allow the Pages origin in `CLIENT_ORIGIN`. Never expose SQL Server directly to the internet.
+For a full local installation, create the database from `database/schema.sql`, then configure `server/.env` from `server/.env.example`. SQL Server Authentication is supported; on Windows, `DB_TRUSTED_CONNECTION=true` uses the Windows account running Node instead. Install the server dependencies with `cd server && npm install`, then start it with `npm start`. Start the Vite client with `cd client && npm run dev`; the local Vite server proxies `/api` to port 5000.
 
-Set the `POS_API_URL` Actions repository variable to the HTTPS API base URL ending in `/api` (for example, `https://pos-api.example.com/api`). The Pages workflow builds the frontend with that URL and publishes it on pushes to `main`. Until that variable is set, the sign-in page reports that the API URL is not configured.
+The API seeds the `admin`, `floyd`, and `arlene` accounts (`admin123`, `floyd123`, and `arlene123`) only when the database has no users. Change seeded passwords before using the app with real restaurant data.
 
-The API and SQL schema are not included in this frontend-only repository; deploy them from the original POS package. Never commit `.env` files or database credentials.
+GitHub Pages hosts only the frontend. To use the hosted site, deploy the Express API separately on a secure HTTPS host that can reach SQL Server, set database credentials on that host, and allow the Pages origin in `CLIENT_ORIGIN`. Never expose SQL Server directly to the internet.
+
+Set the `POS_API_URL` Actions repository variable to the HTTPS API base URL ending in `/api` (for example, `https://pos-api.example.com/api`). The Pages workflow builds the frontend with that URL. Until a public API URL is configured, the hosted sign-in remains unavailable; the local full app runs against the configured SQL Server. Never commit `.env` files or database credentials.
