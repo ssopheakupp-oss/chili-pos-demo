@@ -9,16 +9,26 @@ export default function MenuPage({ cart, addToCart, changeQty, cur }) {
   const [query, setQuery] = useState('');
   const [vegOnly, setVegOnly] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => { api.get('/categories').then(setCategories).catch((e) => setError(e.message)); }, []);
   useEffect(() => {
+    let cancelled = false;
     const t = setTimeout(() => {
+      setLoading(true);
       const qs = new URLSearchParams();
       if (category) qs.set('categoryId', category);
       if (query) qs.set('q', query);
-      api.get(`/products?${qs}`).then((p) => { setProducts(p); setError(''); }).catch((e) => setError(e.message));
+      api.get(`/products?${qs}`)
+        .then((p) => {
+          if (cancelled) return;
+          setProducts(p);
+          setError('');
+        })
+        .catch((e) => { if (!cancelled) setError(e.message); })
+        .finally(() => { if (!cancelled) setLoading(false); });
     }, 200); // debounce typing
-    return () => clearTimeout(t);
+    return () => { cancelled = true; clearTimeout(t); };
   }, [category, query]);
 
   const total = categories.reduce((s, c) => s + c.ItemCount, 0);
@@ -51,9 +61,10 @@ export default function MenuPage({ cart, addToCart, changeQty, cur }) {
       </div>
 
       {error && <p className="form-error">{error}</p>}
-      {!error && !shown.length && <p className="empty">No dishes match your search. Try another name or category.</p>}
+      {!error && loading && <p className="empty" role="status">Loading menu…</p>}
+      {!error && !loading && !shown.length && <p className="empty">No dishes match your search. Try another name or category.</p>}
 
-      <div className="grid">
+      <div className="grid" aria-busy={loading}>
         {shown.map((p) => {
           const qty = qtyOf(p.ProductId);
           return (

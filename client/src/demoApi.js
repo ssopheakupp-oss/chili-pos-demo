@@ -1,5 +1,10 @@
 const STORAGE_KEY = 'chili-pos-demo-data-v1';
 
+export function resetDemoData() {
+  localStorage.removeItem(STORAGE_KEY);
+  window.location.reload();
+}
+
 const categories = [
   { CategoryId: 1, Name: 'Starters', Emoji: '🥗', SortOrder: 1 },
   { CategoryId: 2, Name: 'Mains', Emoji: '🍛', SortOrder: 2 },
